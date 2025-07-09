@@ -2,8 +2,15 @@ from fastapi import FastAPI, HTTPException
 from typing import List
 from models import Hospital, HospitalCreate, HospitalUpdate
 import database
+import os
+import uvicorn
 
 app = FastAPI()
+
+
+@app.get("/")
+def health_check():
+    return {"status": "OK"}
 
 
 @app.post("/hospitals/", response_model=Hospital)
@@ -52,3 +59,8 @@ def delete_hospital(hospital_id: int):
     if not database.delete_hospital(hospital_id):
         raise HTTPException(status_code=404, detail="Hospital not found")
     return
+
+
+if __name__ == "__main__":
+    port = int(os.getenv("PORT", 10000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
