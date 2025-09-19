@@ -46,6 +46,15 @@ if [[ -z "$GITHUB_USERNAME" || -z "$REPOSITORY_NAME" ]]; then
     handle_error "GitHub username and repository name are required"
 fi
 
+# Verify CR_PAT is set
+if [[ -z "$CR_PAT" ]]; then
+    handle_error "CR_PAT environment variable is not set. Please export your GitHub Container Registry token as CR_PAT."
+fi
+
+# Login to GitHub Container Registry
+echo "$CR_PAT" | docker login ghcr.io -u msanyam --password-stdin || handle_error "Docker login to ghcr.io failed"
+
+
 # Build Docker image for linux/amd64 platform
 echo "Building Docker image for linux/amd64..."
 docker buildx build --platform linux/amd64 -t "$REPOSITORY_NAME" . || handle_error "Docker build failed"
