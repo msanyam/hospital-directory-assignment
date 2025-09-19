@@ -1,10 +1,15 @@
 from fastapi import FastAPI, HTTPException, Request
 from typing import List
-from .models import Hospital, HospitalCreate, HospitalUpdate
-from . import database
-from .config import (
-    APP_NAME, DESCRIPTION, VERSION, MAX_BATCH_SIZE,
-    SLOW_TASK_DELAY_SECONDS, RATE_LIMITS, get_port
+from app.models import Hospital, HospitalCreate, HospitalUpdate
+from app import database
+from app.config import (
+    APP_NAME,
+    DESCRIPTION,
+    VERSION,
+    MAX_BATCH_SIZE,
+    SLOW_TASK_DELAY_SECONDS,
+    RATE_LIMITS,
+    get_port,
 )
 from uuid import UUID
 import uvicorn
@@ -14,11 +19,7 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
 limiter = Limiter(key_func=get_remote_address)
-app = FastAPI(
-    title=APP_NAME,
-    description=DESCRIPTION,
-    version=VERSION
-)
+app = FastAPI(title=APP_NAME, description=DESCRIPTION, version=VERSION)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
@@ -55,7 +56,8 @@ def create_hospital(request: Request, hospital: HospitalCreate):
         address=hospital.address,
         phone=hospital.phone,
         creation_batch_id=hospital.creation_batch_id,
-        active=hospital.creation_batch_id is None,  # False if batch_id provided, True otherwise
+        active=hospital.creation_batch_id
+        is None,  # False if batch_id provided, True otherwise
     )
     created = database.create_hospital(new_hospital)
     return created
