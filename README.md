@@ -30,8 +30,8 @@ cd hospital-directory-api
 ### 2. Create a virtual environment (recommended)
 
 ```bash
-python -m venv paribus-assignment
-source paribus-assignment/bin/activate  # On Windows, use `venv\Scripts\activate`
+python -m venv
+source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
 ```
 
 ### 3. Install dependencies
@@ -53,52 +53,3 @@ The API will be accessible at `http://127.0.0.1:8000`.
 Once the application is running, you can access the interactive API documentation (Swagger UI) at:
 
 `http://127.0.0.1:8000/docs`
-
-## Hospital Model
-
-Each hospital record has the following attributes:
-
-- `id` (integer): Unique identifier
-- `name` (string): Hospital name
-- `address` (string): Hospital address
-- `phone` (string, optional): Hospital phone number
-- `created_at` (timestamp): Automatically set on creation
-
-## Example Usage (using `curl`)
-
-### Add a new Hospital
-
-```bash
-curl -X POST "http://127.0.0.1:8000/hospitals/" -H "Content-Type: application/json" -d '{
-  "name": "General Hospital",
-  "address": "123 Main St",
-  "phone": "555-1234"
-}'
-```
-
-### Get all Hospitals
-
-```bash
-curl -X GET "http://127.0.0.1:8000/hospitals/"
-```
-
-### Get Hospital by ID
-
-```bash
-curl -X GET "http://127.0.0.1:8000/hospitals/1"
-```
-
-### Update a Hospital
-
-```bash
-curl -X PUT "http://127.0.0.1:8000/hospitals/1" -H "Content-Type: application/json" -d '{
-  "name": "General Hospital (Updated)",
-  "phone": "555-5678"
-}'
-```
-
-### Delete a Hospital
-
-```bash
-curl -X DELETE "http://127.0.0.1:8000/hospitals/1"
-```
