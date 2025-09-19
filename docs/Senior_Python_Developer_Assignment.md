@@ -19,7 +19,7 @@ You have been given access to a deployed Hospital Directory API that manages ind
 
 We have deployed a Hospital Directory API for you to use. This API handles individual hospital operations and includes batch management features specifically designed for bulk processing scenarios.
 
-**Base URL**: `https://hospital-api.example.com` _(URL will be provided upon assignment start)_
+**Base URL**: `https://hospital-directory.onrender.com/docs`
 
 #### Key Features:
 
