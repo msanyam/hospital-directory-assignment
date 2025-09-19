@@ -1,9 +1,12 @@
 from fastapi import FastAPI, HTTPException, Request
 from typing import List
-from models import Hospital, HospitalCreate, HospitalUpdate
+from .models import Hospital, HospitalCreate, HospitalUpdate
+from . import database
+from .config import (
+    APP_NAME, DESCRIPTION, VERSION, MAX_BATCH_SIZE,
+    SLOW_TASK_DELAY_SECONDS, RATE_LIMITS, get_port
+)
 from uuid import UUID
-import database
-import os
 import uvicorn
 import time
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -11,28 +14,28 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
 limiter = Limiter(key_func=get_remote_address)
-app = FastAPI()
+app = FastAPI(
+    title=APP_NAME,
+    description=DESCRIPTION,
+    version=VERSION
+)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-# Constants
-MAX_BATCH_SIZE = 20
-MAX_TOTAL_HOSPITALS = 10000
-
 
 def slow_running_task():
-    """Simulates a slow-running task with a 5-second delay"""
-    time.sleep(5)
+    """Simulates a slow-running task with configurable delay."""
+    time.sleep(SLOW_TASK_DELAY_SECONDS)
 
 
 @app.get("/")
-@limiter.limit("100/minute")
+@limiter.limit(RATE_LIMITS["health_check"])
 def health_check(request: Request):
     return {"status": "OK"}
 
 
 @app.post("/hospitals/", response_model=Hospital)
-@limiter.limit("30/minute")
+@limiter.limit(RATE_LIMITS["create_hospital"])
 def create_hospital(request: Request, hospital: HospitalCreate):
     # Check if adding this hospital would exceed batch size limit
     if hospital.creation_batch_id:
@@ -52,21 +55,20 @@ def create_hospital(request: Request, hospital: HospitalCreate):
         address=hospital.address,
         phone=hospital.phone,
         creation_batch_id=hospital.creation_batch_id,
-        active=hospital.creation_batch_id
-        is None,  # False if batch_id provided, True otherwise
+        active=hospital.creation_batch_id is None,  # False if batch_id provided, True otherwise
     )
     created = database.create_hospital(new_hospital)
     return created
 
 
 @app.get("/hospitals/", response_model=List[Hospital])
-@limiter.limit("50/minute")
+@limiter.limit(RATE_LIMITS["get_hospitals"])
 def get_all_hospitals(request: Request):
     return database.get_all_hospitals()
 
 
 @app.get("/hospitals/{hospital_id}", response_model=Hospital)
-@limiter.limit("50/minute")
+@limiter.limit(RATE_LIMITS["get_hospital_by_id"])
 def get_hospital_by_id(request: Request, hospital_id: int):
     hospital = database.get_hospital_by_id(hospital_id)
     if hospital is None:
@@ -75,7 +77,7 @@ def get_hospital_by_id(request: Request, hospital_id: int):
 
 
 @app.put("/hospitals/{hospital_id}", response_model=Hospital)
-@limiter.limit("50/minute")
+@limiter.limit(RATE_LIMITS["update_hospital"])
 def update_hospital(
     request: Request, hospital_id: int, hospital_update: HospitalUpdate
 ):
@@ -94,7 +96,7 @@ def update_hospital(
 
 
 @app.delete("/hospitals/{hospital_id}", status_code=204)
-@limiter.limit("50/minute")
+@limiter.limit(RATE_LIMITS["delete_hospital"])
 def delete_hospital(request: Request, hospital_id: int):
     if not database.delete_hospital(hospital_id):
         raise HTTPException(status_code=404, detail="Hospital not found")
@@ -102,7 +104,7 @@ def delete_hospital(request: Request, hospital_id: int):
 
 
 @app.get("/hospitals/batch/{batch_id}", response_model=List[Hospital])
-@limiter.limit("50/minute")
+@limiter.limit(RATE_LIMITS["get_batch"])
 def get_hospitals_by_batch_id(request: Request, batch_id: UUID):
     hospitals = database.get_hospitals_by_batch_id(batch_id)
     if not hospitals:
@@ -113,7 +115,7 @@ def get_hospitals_by_batch_id(request: Request, batch_id: UUID):
 
 
 @app.delete("/hospitals/batch/{batch_id}")
-@limiter.limit("50/minute")
+@limiter.limit(RATE_LIMITS["delete_batch"])
 def delete_hospitals_by_batch(request: Request, batch_id: UUID):
     deleted_count = database.delete_hospitals_by_batch_id(batch_id)
     if deleted_count == 0:
@@ -127,7 +129,7 @@ def delete_hospitals_by_batch(request: Request, batch_id: UUID):
 
 
 @app.patch("/hospitals/batch/{batch_id}/activate")
-@limiter.limit("50/minute")
+@limiter.limit(RATE_LIMITS["activate_batch"])
 def activate_hospitals_by_batch(request: Request, batch_id: UUID):
     # Check if batch exists
     hospitals_in_batch = database.get_hospitals_by_batch_id(batch_id)
@@ -151,5 +153,5 @@ def activate_hospitals_by_batch(request: Request, batch_id: UUID):
 
 
 if __name__ == "__main__":
-    port = int(os.getenv("PORT", 10000))
+    port = get_port()
     uvicorn.run(app, host="0.0.0.0", port=port)

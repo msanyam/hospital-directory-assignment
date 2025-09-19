@@ -1,11 +1,11 @@
 from typing import List, Optional
-from models import Hospital
+from .models import Hospital
+from .config import MAX_TOTAL_HOSPITALS
 from uuid import UUID
 from collections import deque
 
 # FIFO storage with maximum capacity
-MAX_HOSPITALS = 10000
-hospitals_db: deque = deque(maxlen=MAX_HOSPITALS)
+hospitals_db: deque = deque(maxlen=MAX_TOTAL_HOSPITALS)
 next_id: int = 1
 
 
@@ -40,7 +40,7 @@ def update_hospital(hospital_id: int, updated_hospital: Hospital) -> Optional[Ho
         if hospital.id == hospital_id:
             hospital_list[i] = updated_hospital
             # Convert back to deque
-            hospitals_db = deque(hospital_list, maxlen=MAX_HOSPITALS)
+            hospitals_db = deque(hospital_list, maxlen=MAX_TOTAL_HOSPITALS)
             return updated_hospital
     return None
 
@@ -50,7 +50,7 @@ def delete_hospital(hospital_id: int) -> bool:
     initial_len = len(hospitals_db)
     # Convert to list, filter, and convert back to deque
     filtered_hospitals = [hospital for hospital in hospitals_db if hospital.id != hospital_id]
-    hospitals_db = deque(filtered_hospitals, maxlen=MAX_HOSPITALS)
+    hospitals_db = deque(filtered_hospitals, maxlen=MAX_TOTAL_HOSPITALS)
     return len(hospitals_db) < initial_len
 
 
@@ -59,7 +59,7 @@ def delete_hospitals_by_batch_id(batch_id: UUID) -> int:
     initial_len = len(hospitals_db)
     # Convert to list, filter, and convert back to deque
     filtered_hospitals = [hospital for hospital in hospitals_db if hospital.creation_batch_id != batch_id]
-    hospitals_db = deque(filtered_hospitals, maxlen=MAX_HOSPITALS)
+    hospitals_db = deque(filtered_hospitals, maxlen=MAX_TOTAL_HOSPITALS)
     return initial_len - len(hospitals_db)
 
 
