@@ -27,11 +27,10 @@ We have deployed a Hospital Directory API for you to use. This API handles indiv
 - Batch processing support with unique batch IDs
 - Hospitals created with a batch ID are marked as inactive
 - Batch activation to make all hospitals in a batch active simultaneously
-- 5-second processing delay per hospital creation (simulates complex business logic)
 
 #### Available Endpoints:
 
-- `POST /hospitals/` - Create individual hospital (5-second processing delay)
+- `POST /hospitals/` - Create individual hospital
 - `GET /hospitals/` - Get all hospitals
 - `GET /hospitals/batch/{batch_id}` - Get hospitals by batch ID
 - `PATCH /hospitals/batch/{batch_id}/activate` - Activate all hospitals in batch
@@ -92,7 +91,6 @@ Your bulk processing API should support the following operations:
 
 ### Technical Constraints
 
-- Each hospital creation takes ~5 seconds via the deployed API
 - Maximum CSV size: 20 hospitals
 
 ### Expected Tech Stack
@@ -100,13 +98,13 @@ Your bulk processing API should support the following operations:
 - **Language:** Python 3.8+
 - **Web Framework:** FastAPI or Flask (preferred for its minimalism)
 - **Data Persistence:** In-memory storage is acceptable
-- **Deployment:** Deploy the app online. Suggested platforms: Render
+- **Deployment:** Deploy the app online. Suggested platforms: [Render](https://render.com/)
 
 ### Optional Tasks (Bonus Points)
 
 If you have extra time or want to showcase additional skills, consider implementing:
 
-- **Performance Optimization:** Concurrent processing to reduce total time
+- **Performance Optimization**
 - **Progress Tracking:** Real-time progress updates via WebSocket or polling endpoint
 - **Resume Capability:** Ability to resume failed bulk operations
 - **CSV Validation:** Endpoint to validate CSV format before processing

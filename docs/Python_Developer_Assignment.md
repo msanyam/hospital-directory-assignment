@@ -75,7 +75,7 @@ If you have extra time or want to showcase additional skills, consider implement
 - **Language:** Python
 - **Web Framework:** FastAPI or Flask (preferred for its minimalism)
 - **Data Persistence:** In-memory storage is acceptable
-- **Deployment:** Deploy the app online. Suggested platforms: Render
+- **Deployment:** Deploy the app online. Suggested platforms: [Render](https://render.com/)
 
 ### Evaluation Rubric / Checklist
 
